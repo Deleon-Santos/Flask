@@ -1,60 +1,90 @@
-# api para gestão de bibliotecas
-
-
+import sqlite3
+import bd_livros
+from bd_livros import conectar_bd, criar_tabela
 from flask import Flask, request, jsonify
+
+
 
 app = Flask(__name__)
 
-bibliotecas = [
-    {"id": 1, "titulo": "1984", "autor": "George Orwell"},
-    {"id": 2, "titulo": "Dom Casmurro", "autor": "Machado de Assis"},
-    {"id": 3, "titulo": "O Senhor dos Anéis", "autor": "J.R.R. Tolkien"}
-]
+bd_livros.criar_tabela()
 
-# retornando todos os livros
+# Retorna todos os livros
 @app.route('/bibliotecas', methods=['GET'])
-def get_bibliotecas():
-    return jsonify(bibliotecas)
+def get_livros():
+    conn = bd_livros.conectar_bd()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM livros')
+    livros = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    print(livros)
+    return jsonify(livros), 200
 
-# retornando todos os livros por id
+# Retorna livro por ID
 @app.route('/bibliotecas/<int:id>', methods=['GET'])
-def retorna_livro_id(id):
-    for livro in bibliotecas:
-        if livro['id'] == id:
-            return livro
+def get_livro_por_id(id):
+    conn = bd_livros.conectar_bd()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM livros WHERE id = ?', (id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return jsonify(dict(row)), 200
     return jsonify({'message': 'Livro não encontrado!'}), 404
 
-# modificando um livro
-@app.route('/bibliotecas/<int:id>', methods=['PUT'])
-def alterar_livro_id(id):
-    livro_modificado = request.get_json()
-
-    # para todos os indices da lista enumerado, retorna o indice que contem o id
-    for indice, livro in enumerate(bibliotecas):
-        if livro.get('id') == id:
-            # o livro daquele indice deve receber as modificações
-            bibliotecas[indice].update(livro_modificado)
-            return jsonify(bibliotecas)  # retorna o indice modificado
-    return jsonify({'message': 'Livro não encontrado!'}), 404
-
-# adicionando um novo livro
+# Adiciona um novo livro
 @app.route('/bibliotecas', methods=['POST'])
-def adicionar_novo_livro():
-    novo_livro = request.get_json()
-    novo_livro['id'] = len(bibliotecas) + 1  # Atribui um novo ID
-    bibliotecas.append(novo_livro)
-    return jsonify(novo_livro)
+def adicionar_livro():
+    dados = request.get_json()
+    titulo = dados.get('titulo')
+    autor = dados.get('autor')
+    print(dados, titulo, autor)
+    if not titulo or not autor:
+        return jsonify({'message': 'Campos obrigatórios: titulo e autor'}), 400
 
-# deletando um livro
-@app.route('/bibliotecas/<int:id>', methods=['DELETE'])
-def excluir_livro_id(id):
-    for indice, livro in enumerate(bibliotecas):
-        if livro['id'] == id:
-            livro_excluido = bibliotecas[indice]
-            del bibliotecas[indice]
-            return jsonify({'message': f'Livro  ID: {livro_excluido.get('id')} excluído com sucesso!'})
+    conn = bd_livros.conectar_bd()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO livros (titulo, autor) VALUES (?, ?)', (titulo, autor))
+    conn.commit()
+    novo_id = cursor.lastrowid
+    conn.close()
+    print({'id': novo_id, 'titulo': titulo, 'autor': autor})
+    return jsonify({'id': novo_id, 'titulo': titulo, 'autor': autor}), 201
+
+# Atualiza um livro
+@app.route('/bibliotecas/<int:id>', methods=['PUT'])
+def atualizar_livro(id):
+    dados = request.get_json()
+    titulo = dados.get('titulo')
+    autor = dados.get('autor')
+
+    if not titulo or not autor:
+        return jsonify({'message': 'Campos obrigatórios: titulo e autor'}), 400
+
+    conn = bd_livros.conectar_bd()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE livros SET titulo = ?, autor = ? WHERE id = ?', (titulo, autor, id))
+    conn.commit()
+    atualizado = cursor.rowcount
+    conn.close()
+
+    if atualizado:
+        return jsonify({'id': id, 'titulo': titulo, 'autor': autor}), 200
     return jsonify({'message': 'Livro não encontrado!'}), 404
 
+# Deleta um livro
+@app.route('/bibliotecas/<int:id>', methods=['DELETE'])
+def deletar_livro(id):
+    conn = bd_livros.conectar_bd()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM livros WHERE id = ?', (id,))
+    conn.commit()
+    deletado = cursor.rowcount
+    conn.close()
 
-app.run(debug=True, host='localhost', port=5000)
+    if deletado:
+        return jsonify({'message': f'Livro ID: {id} excluído com sucesso!'}), 200
+    return jsonify({'message': 'Livro não encontrado!'}), 404
 
+if __name__ == '__main__':
+    app.run(debug=True, host='localhost', port=5000)
