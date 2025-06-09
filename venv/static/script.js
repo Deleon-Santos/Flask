@@ -10,6 +10,7 @@ async function listarLivros() {
     const item = document.createElement('li');
     item.textContent = `ID: ${livro.id} | Título: ${livro.titulo} | Autor: ${livro.autor}`;
     lista.appendChild(item);
+    alert(`ID: ${livro.id} | Título: ${livro.titulo} | Autor: ${livro.autor}`);
   });
 }
 
@@ -46,8 +47,8 @@ async function atualizarLivro() {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({titulo, autor})
   });
-
-  listarLivros();
+  alert('Livro enviado com sucesso!');
+  // listarLivros();
 }
 
 async function deletarLivro() {
