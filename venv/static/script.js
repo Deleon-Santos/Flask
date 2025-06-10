@@ -1,18 +1,46 @@
 const API_URL = 'http://localhost:5000/bibliotecas';
-
 async function listarLivros() {
-  const resposta = await fetch(API_URL);
-  const livros = await resposta.json();
+try {
+  const response = await fetch(API_URL);
+  const livros = await response.json();
 
-  const lista = document.getElementById('lista-livros');
-  lista.innerHTML = '';
-  livros.forEach(livro => {
-    const item = document.createElement('li');
-    item.textContent = `ID: ${livro.id} | Título: ${livro.titulo} | Autor: ${livro.autor}`;
-    lista.appendChild(item);
-    alert(`ID: ${livro.id} | Título: ${livro.titulo} | Autor: ${livro.autor}`);
-  });
+  const listaLivros = document.getElementById('lista-livros');
+  listaLivros.innerHTML = '';
+
+  if (livros.length === 0) {
+    const li = document.createElement('li');
+    li.textContent = 'Nenhum livro encontrado.';
+    listaLivros.appendChild(li);
+  } else {
+    livros.forEach(livro => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>ID:</strong> ${livro.id} | <strong>Título:</strong> ${livro.titulo} | <strong>Autor:</strong> ${livro.autor}`;
+      listaLivros.appendChild(li);
+    });
+  }
+} catch (error) {
+  console.error('Erro ao buscar livros:', error);
 }
+}
+
+// Carrega a lista ao abrir a página
+window.onload = listarLivros;
+
+  
+// async function listarLivros() {
+//   const resposta = await fetch(API_URL);
+//   const livros = await resposta.json();
+
+//   const lista = document.getElementById('lista-livros');
+//   lista.innerHTML = '';
+//   livros.forEach(livro => {
+//     const item = document.createElement('li');
+//     item.textContent = `ID: ${livro.id} | Título: ${livro.titulo} | Autor: ${livro.autor}`;
+//     lista.appendChild(item);
+//     alert(`ID: ${livro.id} | Título: ${livro.titulo} | Autor: ${livro.autor}`);
+//   });
+// }
+
 
 async function adicionarLivro() {
   const titulo = document.getElementById('titulo').value;

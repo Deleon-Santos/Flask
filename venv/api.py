@@ -1,13 +1,17 @@
-import sqlite3
+# import sqlite3
 import bd_livros
 from bd_livros import conectar_bd, criar_tabela
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
 
 
 app = Flask(__name__)
 
 bd_livros.criar_tabela()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # Retorna todos os livros
 @app.route('/bibliotecas', methods=['GET'])
@@ -18,6 +22,7 @@ def get_livros():
     livros = [dict(row) for row in cursor.fetchall()]
     conn.close()
     print(livros)
+    # return render_template('index.html', livros=livros)
     return jsonify(livros), 200
 
 # Retorna livro por ID
