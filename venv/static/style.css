@@ -48,3 +48,9 @@ li {
   padding: 5px;
   border-radius: 4px;
 }
+.livros-container{
+  margin-top: 10px;
+  height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd; 
+}

@@ -21,7 +21,7 @@ def get_livros():
     cursor.execute('SELECT * FROM livros')
     livros = [dict(row) for row in cursor.fetchall()]
     conn.close()
-    print(livros)
+    
     # return render_template('index.html', livros=livros)
     return jsonify(livros), 200
 
@@ -53,7 +53,7 @@ def adicionar_livro():
     conn.commit()
     novo_id = cursor.lastrowid
     conn.close()
-    print({'id': novo_id, 'titulo': titulo, 'autor': autor})
+    
     return jsonify({'id': novo_id, 'titulo': titulo, 'autor': autor}), 201
 
 # Atualiza um livro
