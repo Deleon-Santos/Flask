@@ -1,4 +1,8 @@
-# import sqlite3
+"""Esta é uma API contruida para gerenciar (CRUD) com Flask e SQLite.
+A aplicação conta com funcionalidades para adicionar, atualizar, deletar e listar livros 
+atravez de uma interface gafica gerada com HTML, CSS e JavaScript.
+ 
+"""
 import bd_livros
 from bd_livros import conectar_bd, criar_tabela
 from flask import Flask, request, jsonify, render_template
@@ -9,7 +13,7 @@ app = Flask(__name__)
 
 bd_livros.criar_tabela()
 
-@app.route('/')
+@app.route('/')# retorna a pagina html
 def index():
     return render_template('index.html')
 
@@ -21,8 +25,6 @@ def get_livros():
     cursor.execute('SELECT * FROM livros')
     livros = [dict(row) for row in cursor.fetchall()]
     conn.close()
-    
-    # return render_template('index.html', livros=livros)
     return jsonify(livros), 200
 
 # Retorna livro por ID
@@ -53,7 +55,6 @@ def adicionar_livro():
     conn.commit()
     novo_id = cursor.lastrowid
     conn.close()
-    
     return jsonify({'id': novo_id, 'titulo': titulo, 'autor': autor}), 201
 
 # Atualiza um livro
